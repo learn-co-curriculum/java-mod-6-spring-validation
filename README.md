@@ -196,9 +196,9 @@ response:
 
 ### `@Validated`
 
-The `@Validated` annotation is applied to class controller to enable the
-`@Valid` annotation for parameters marked with `@PathVariable` and
-`@RequestParam` in addition to the `@RequestBody` as described above.
+The `@Validated` annotation is applied to class controller to enable validation
+annotations for parameters marked with `@PathVariable` and `@RequestParam` as
+described above.
 
 ## Conclusion
 
