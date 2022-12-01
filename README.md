@@ -11,8 +11,19 @@ A client can send invalid data to the server. It is important to implement
 server side validation to make sure no invalid data is stored in the database.
 
 The `javax.validation` package provides annotations for different types of
-validations. We need to add the following dependency to enable validations in
-Spring:
+validations. We can either:
+
+1. Add the dependency to an existing Maven project with a pom.xml.
+2. Create a new Spring Boot application using the Spring Initializr.
+
+We'll cover both options in this lesson in case you want to add a dependency to
+an existing project or create a new one!
+
+### Adding the Validation Dependency to an Existing Maven Project
+
+1. Open up the pom.xml in the Maven project.
+2. Under the `<dependencies>` header, add the following section to add the
+   `javax.validation` package:
 
 ```xml
 <dependency>
@@ -20,6 +31,26 @@ Spring:
    <artifactId>spring-boot-starter-validation</artifactId>
 </dependency>
 ```
+
+3. Reload the Maven project to finish adding the dependency.
+
+### Adding the Validation Dependency to a New Spring Project
+
+1. Navigate to the [Spring Initializr](https://start.spring.io/).
+2. Select the project properties.
+    1. Select "Maven Project", as we will use Maven as the build tool.
+    2. Select "Java" as the language.
+    3. Select the most recent release version of Spring Boot 2. (Make sure it does
+       not have "SNAPSHOT" listed after it.)
+    4. Select the appropriate Java JDK version.
+3. Add dependencies.
+    1. Click "ADD DEPENDENCIES".
+    2. Search for "validation".
+    3. Select "Validation" from the list.
+    4. Add any other dependencies by repeating this process.
+4. Click on the “Generate” button on the bottom. This will download a zip file
+   containing the Spring Boot project.
+5. Unzip the archive and open it in a preferred code editor or IDE.
 
 Let’s look at the common annotations we can use in our application.
 
@@ -78,7 +109,7 @@ fields. We define the regular expression in the `regexp` parameter of the
 `@Pattern` annotation.
 
 ```java
-@Pattern(regexp = "[0-9]{4, 6}"
+@Pattern(regexp = "[0-9]{4, 6}")
 private String pin;
 ```
 
@@ -96,93 +127,80 @@ looking at the `@Valid` and `@Validated` annotations.
 The `@Valid` annotation is added before a controller method parameter. Let’s add
 a `@Valid` annotation to the `Member` controller we built in this section.
 
-Open up the `Member` class and add the following annotations to the `name`
-field:
+Open up the `FootballTeamDTO` class and add the following annotations to the
+`teamName` field:
 
 ```java
-// Member.java
+package com.example.springdatademo.dto;
 
-@Entity
-public class Member {
-    @Id
-    @GeneratedValue
-    private int id;
+import lombok.Data;
+
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+
+@Data
+public class FootballTeamDTO {
 
     @NotNull
-    @NotBlank
-    private String name;
-
-    private String email;
-
-    // getters and setters
+    @NotEmpty
+    private String teamName;
+    private int wins;
+    private int losses;
+    private boolean currentSuperBowlChampion;
 }
 ```
 
-Now open up the `MemberController` class and modify the `createMember` method:
+Now open up the `FootballController` class and modify the `addFootballTeam`
+method:
 
 ```java
-// MemberController.java
+package com.example.springdatademo.controller;
 
-package org.example.springwebdemo.controller;
-
-import org.example.springwebdemo.model.Member;
-import org.example.springwebdemo.service.MemberService;
+import com.example.springdatademo.dto.FootballTeamDTO;
+import com.example.springdatademo.service.FootballService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.List;
 
 @RestController
-@RequestMapping("/api")
-public class MemberController {
+public class FootballController {
+
+    private final FootballService footballService;
+
     @Autowired
-    MemberService memberService;
-
-    @PostMapping("/members")
-    public ResponseEntity<Member> createMember(@Valid @RequestBody Member member) {
-        Member newMember = memberService.createMember(member);
-        return ResponseEntity.ok(newMember);
+    public FootballController(FootballService footballService) {
+        this.footballService = footballService;
     }
 
-    @GetMapping("/members")
-    public List<Member> readMembers() {
-        return memberService.getMembers();
+    @PostMapping("/football-team")
+    public ResponseEntity<String> addFootballTeam(@Valid @RequestBody FootballTeamDTO footballTeam) {
+        String status = footballService.addFootballTeam(footballTeam);
+        return ResponseEntity.ok(status);
     }
 
-    @GetMapping("/members/{memberId}")
-    public Member readMember(@PathVariable(value = "memberId") Integer id) {
-        return memberService.getMember(id);
-    }
-
-    @PutMapping("/members/{memberId}")
-    public Member updateMember(@PathVariable(value = "memberId") Integer id, @RequestBody Member memberData) {
-        return memberService.updateMember(id, memberData);
-    }
-
-    @DeleteMapping("/members/{memberId}")
-    public void deleteMember(@PathVariable(value = "memberId") Integer id) {
-        memberService.deleteMember(id);
-    }
+    // Other methods for GET, PUT, and DELETE requests
 }
 ```
 
-Notice that we are returning a `ResponseEntity` instead of a `Member` object
-like earlier. The `ResponseEntity` allows us to modify response information
-(status code, headers) before sending them back to the client.
+Notice that we are returning a `ResponseEntity` instead of a `String`.
+The `ResponseEntity` allows us to modify response information, like status
+codes and headers, before sending them back to the client.
 
 Now open up Postman and make the following `POST` request to
-`http://localhost:8080/api/members`:
+`http://localhost:8080/football-team`:
 
 ```java
 {
-    "name": "",
-    "email": "sokka@example.com"
-}
+        "teamName":"",
+        "wins":10,
+        "losses":1,
+        "currentSuperBowlChampion":0
+        }
 ```
 
-Since the `name` property is empty the server will send back the following
+Since the `teamName` property is empty the server will send back the following
 response:
 
 ```java
@@ -190,7 +208,7 @@ response:
     "timestamp": "2022-07-03T14:43:26.636+00:00",
     "status": 400,
     "error": "Bad Request",
-    "path": "/api/members"
+    "path": "/football-team"
 }
 ```
 
