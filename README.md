@@ -125,7 +125,8 @@ looking at the `@Valid` and `@Validated` annotations.
 ### `@Valid`
 
 The `@Valid` annotation is added before a controller method parameter. Let’s add
-a `@Valid` annotation to the `Member` controller we built in this section.
+a `@Valid` annotation to the `FootballTeamController` controller we built in
+this section.
 
 Open up the `FootballTeamDTO` class and add the following annotations to the
 `teamName` field:
