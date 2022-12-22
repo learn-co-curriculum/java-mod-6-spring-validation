@@ -159,6 +159,19 @@ public class FootballTeamWithChampionDTO {
 }
 ```
 
+Now let's make an edit to the `FootballService` class to take in a
+`FootballTeamWithChampionDTO`:
+
+```java
+// FootballService.java - just a small change to the parameter footballTeam
+
+    public String addFootballTeam(FootballTeamWithChampionDTO footballTeam) {
+        FootballTeam footballTeamEntity = modelMapper.map(footballTeam, FootballTeam.class);
+        footballRepository.save(footballTeamEntity);
+        return String.format("%s has been added!", footballTeam.getTeamName());
+    }
+```
+
 Now open up the `FootballController` class and modify the `addFootballTeam`
 method:
 
