@@ -128,26 +128,34 @@ The `@Valid` annotation is added before a controller method parameter. Let’s a
 a `@Valid` annotation to the `FootballTeamController` controller we built in
 this section.
 
-Open up the `FootballTeamDTO` class and add the following annotations to the
-`teamName` field:
+Open up the `FootballTeamWithChampionDTO` class and add the following
+annotations to the `teamName` field:
 
 ```java
 package com.example.springdatademo.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.Data;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 @Data
-public class FootballTeamDTO {
+@JsonPropertyOrder({"team_name", "wins", "losses", "current_super_bowl_champion"})
+public class FootballTeamWithChampionDTO {
 
-    @NotNull
-    @NotEmpty
-    private String teamName;
-    private int wins;
-    private int losses;
-    private boolean currentSuperBowlChampion;
+   @NotNull
+   @NotEmpty
+   @JsonProperty("team_name")
+   private String teamName;
+
+   private int wins;
+
+   private int losses;
+
+   @JsonProperty("current_super_bowl_champion")
+   private boolean currentSuperBowlChampion;
 }
 ```
 
@@ -176,7 +184,7 @@ public class FootballController {
     }
 
     @PostMapping("/football-team")
-    public ResponseEntity<String> addFootballTeam(@Valid @RequestBody FootballTeamDTO footballTeam) {
+    public ResponseEntity<String> addFootballTeam(@Valid @RequestBody FootballTeamWithChampionDTO footballTeam) {
         String status = footballService.addFootballTeam(footballTeam);
         return ResponseEntity.ok(status);
     }
@@ -192,16 +200,16 @@ codes and headers, before sending them back to the client.
 Now open up Postman and make the following `POST` request to
 `http://localhost:8080/football-team`:
 
-```java
+```json
 {
-        "teamName":"",
-        "wins":10,
-        "losses":1,
-        "currentSuperBowlChampion":0
-        }
+   "team_name":"",
+   "wins":7,
+   "losses":3,
+   "current_super_bowl_champion":0
+}
 ```
 
-Since the `teamName` property is empty the server will send back the following
+Since the `team_name` property is empty the server will send back the following
 response:
 
 ```java
